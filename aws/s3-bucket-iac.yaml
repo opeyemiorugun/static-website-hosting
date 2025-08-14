@@ -48,11 +48,10 @@ S3Bucket:
       -Id: EntireBucket
     WebsiteConfiguration:
       IndexDocument: index.html
-
 MyBucketPolicy:
   Type: AWS::S3::BucketPolicy
   Properties:
-    Bucket: !Ref MyBucket
+    Bucket: !Ref S3Bucket
     PolicyDocument:
       Version: "2012-10-17"
       Statement:
