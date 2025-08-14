@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Static Website Hosting'
+Parameters:
+Resources:
+MyVPN:
+  Type: AWS::EC2::VPC
+  Properties:
+    CidrBlock: 10.0.2.0/24
+VPCDoor:
+  Type: AWS::EC2::InternetGateway
+SubnetPublic:
+  Type: AWS::EC2::Subnet
+  Properties:
+    AvailabilityZone: !Select [0, !GetAZs '']
+    CidrBlock: 10.0.2.0/26
+    VpcId: !MyVPN    
+VPCRouteTable:
+  Type: AWS::EC2::RouteTable
+  Properties:
+    VpcId: !MyVPN
+PublicRoute:
+  Type: AWS::EC2::Route
+  DependsOn: VPCRouteTable
+  Properties:
+    RouteTableId: !VPCRouteTable
+    DestinationCidrBlock: 10.0.2.0/24
+    GatewayId: !VPCDoor
+AssociateSubnetRouteTb:
+  Type: AWS::EC2::SubnetRouteTableAssociation   
+  Properties:
+    RouteTableId: !VPCRouteTable
+    SubnetId: !SubnetPublic
+AssociateGatewayRouteTb:
+  Type: AWS::EC2::GatewayRouteTableAssociation
+  Properties:
+    GatewayId: !VPCDoor
+    RouteTableId: !VPCRouteTable
+AssociateGatewayVPC:
+  Type: AWS::EC2::VPCGatewayAttachment
+  Properties:
+    InternetGatewayId: !VPCDoor
+    VpcId: !MyVPN
+S3Bucket:
+  Type: AWS::S3::Bucket
+  Properties:
+    BucketName: ope-first-project
+    MetricsConfigurations:
+      -Id: EntireBucket
+    WebsiteConfiguration:
+      IndexDocument: index.html
+
+MyBucketPolicy:
+  Type: AWS::S3::BucketPolicy
+  Properties:
+    Bucket: !Ref MyBucket
+    PolicyDocument:
+      Version: "2012-10-17"
+      Statement:
+        - Effect: Allow
+          Principal: "*"
+          Action: s3:GetObject
+          Resource: !Sub "${S3Bucket.Arn}/*"
+
+
+
+
+
+
+
+
